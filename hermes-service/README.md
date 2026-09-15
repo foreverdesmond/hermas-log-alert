@@ -4,9 +4,10 @@ The server half of the pipeline. It verifies the collector's signed events, deci
 which ones deserve a real-time notification, and produces the daily digest.
 
 It runs inside its own Hermes profile: separate gateway process, separate bot, separate
-state. It never opens its own public port — the public entry is **one exact path** on an
-existing HTTPS host, reverse-proxied to a loopback listener, and the health endpoint
-stays loopback-only.
+state. How the receiver is exposed is up to your deployment: the reference deployment
+puts it behind **one exact path** on an existing HTTPS host, reverse-proxied to a loopback
+listener, with the health endpoint loopback-only. A public port, an nginx proxy, or an
+internal-only link are equally fine.
 
 ## Components
 
@@ -22,7 +23,7 @@ stays loopback-only.
 ## Data flow
 
 ```
-collector ──signed HTTPS──▶ public exact path ──▶ loopback webhook listener
+collector ──signed HTTPS──▶ webhook entry (per your deployment) ──▶ receiver
                                                       │
                           signature check ────────────┤  401 on failure
                                                       ▼
@@ -70,14 +71,15 @@ shared signing secret (kept in local secrets only).
 4. Create the cron jobs: the daily digest (`script` = `log_storm_daily_digest.py`,
    prompt = `config/prompts/daily-digest.md`, once a day in local time) and, if wanted,
    the one-off trial review (`config/prompts/trial-review.md`).
-5. Reverse-proxy `<GATEWAY_HOST>` so that the exact webhook path reaches the loopback
-   listener, POST-only, with basic auth disabled **for that path only**. Everything else
-   on that host stays untouched.
+5. Expose the receiver however your deployment prefers. The reference setup reverse-proxies
+   an existing HTTPS host so the exact webhook path reaches the loopback listener, POST-only,
+   with basic auth disabled **for that path only**; a public port, another proxy, or an
+   internal-only link works just as well.
 6. Run the verification checklist below.
 
 ## Verification checklist
 
-- gateway process active; listener bound to **loopback only**
+- gateway process active; listener bound as your deployment intends (loopback-only in the reference setup)
 - health endpoint `200`; missing header / wrong signature `401`
 - a valid synthetic event (real HMAC, signed locally) → `202`, and the delivery record
   shows `delivered`, `attempts=0`, no error
