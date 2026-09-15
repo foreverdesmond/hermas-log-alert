@@ -3,9 +3,11 @@
 <div align="center">
 
 **让日志自己分级：真故障立刻喊你，噪声沉到每日汇总**
+
 **Logs grade themselves — real faults reach you now, noise waits for the daily digest**
 
 一套轻量的日志告警流水线：本机跑一个 Docker 采集栈，对面由 AI 负责分诊与每日汇总。
+
 A lightweight log alert pipeline: a Docker collector on your machine, an AI triage and digest service on the other side.
 
 出品人：Richy
@@ -38,12 +40,12 @@ A lightweight log alert pipeline: a Docker collector on your machine, an AI tria
 
 ### 用了能得到什么
 
-- **安静**：warning 与 INFO/DEBUG 不再半夜吵你，同一个故障的重复日志会被合并成一条。
-- **不漏**：首次出现的故障类别**一定会**送到你手上；critical 永远实时 —— 聚合只压重复，不压新问题。
+- **安静**：WARNING 与 INFO/DEBUG 不再半夜吵你，同一个故障的重复日志会被合并成一条。
+- **不漏**：首次出现的故障类别**一定会**送到你手上；CRITICAL 永远实时 —— 聚合只压重复，不压新问题。
 - **真的智能**：级别由大模型读日志内容判断，而不是只匹配关键字；每条告警都写清 项目 / 程序 / 日志文件，而不是笼统的"有台机器报错了"。
 - **只报你最关心的**：用配置决定哪些项目、哪些程序、哪些级别要实时叫你；其余日志不丢弃，而是被统计与分类，成为后续迭代与故障排查的数据依据。
 - **省 Token**：过滤与聚类都在模型之前完成，重复日志不会一遍遍送进大模型，从而有效降低 LLM 的调用量与 Token 消耗。
-- **部署灵活**：本机 Docker、云主机、内网机器都能跑；接收端可以躲在已有域名的一个路径后面，也可以用公网端口、Nginx 转发 —— 都行。
+- **部署灵活**：本机 Docker、云主机、内网机器都能跑；容器用 Portainer、Docker Compose、Swarm、K8s 管都行；接收端可以躲在已有域名的一个路径后面，也可以用公网端口、Nginx 转发 —— 都行。
 
 ### 为什么需要它
 
@@ -55,7 +57,7 @@ A lightweight log alert pipeline: a Docker collector on your machine, an AI tria
 
 - **级别不再靠猜**：日志内容直接交给大模型判断，得到的是真正的智能日志 —— 它读得懂上下文，而不是只看有没有关键字。
 - **只汇报你最关心的**：通过配置决定哪些项目、哪些程序、哪些级别需要实时叫你，其余的不再打扰你。
-- **其余日志不是丢掉，而是变成数据**：系统里其他级别的日志会被统计与分类，成为后续迭代与故障排查的依据 —— 平时没人看的 INFO 与 WARN，恰恰是趋势和隐患的来源。
+- **其余日志不是丢掉，而是变成数据**：系统里其他级别的日志会被统计与分类，成为后续迭代与故障排查的依据 —— 平时没人看的 INFO 与 WARNING，恰恰是趋势和隐患的来源。
 - **过滤与聚类在模型之前完成**：大量重复的日志不会一遍遍送进大模型，同类先合并，模型只处理真正有信息量的内容，从而**有效降低 LLM 的调用量与 Token 消耗**。
 
 | | 传统日志告警 | 接入 Hermes 之后 |
@@ -72,10 +74,10 @@ A lightweight log alert pipeline: a Docker collector on your machine, an AI tria
 
 在模型之前先放四道闸，让模型只看真正值得看的东西：
 
-1. **分级分道**：warning / info / debug / trace 只入库，交给每日汇总；error 走实时通道；critical 永远实时。
-2. **正文级别优先**：以日志正文里自带的级别为准（双向）—— 采集端把 INFO 误标成 error 会被归位，正文是 ERROR 而被标低会被升级。含 `failed` / `exception` / `timeout` 等故障词的行**永不降级**。
+1. **分级分道**：WARNING / INFO / DEBUG / TRACE 只入库，交给每日汇总；ERROR 走实时通道；CRITICAL 永远实时。
+2. **正文级别优先**：以日志正文里自带的级别为准（双向）—— 采集端把 INFO 误标成 ERROR 会被归位，正文是 ERROR 而被标低会被升级。含 `failed` / `exception` / `timeout` 等故障词的行**永不降级**。
 3. **类别聚合**：同一个主机 + 来源 + 级别 + 分量 + 故障模式的一类问题，默认 1 小时内最多提醒一次（可配置）；同类 5 条/300 秒会立刻升级；被静默的事件仍然全部入库，不会凭空消失。
-4. **每日汇总**：每天固定时间把收集到的 warning 聚类，交给模型写一份中文汇总（哪些要人工处理、哪些疑似 bug、哪些是可忽略噪声），并附上用量与看门狗状态。
+4. **每日汇总**：每天固定时间把收集到的 WARNING 聚类，交给模型写一份汇总（哪些要人工处理、哪些疑似 bug、哪些是可忽略噪声），并附上用量与看门狗状态。**输出语言与措辞由提示词决定**，随时可以配置和升级。
 
 状态库读不到时会**静默丢弃并留下痕迹**（而不是崩溃或制造模型风暴），异常由下一次汇总的看门狗段落报出来。
 
@@ -84,12 +86,12 @@ A lightweight log alert pipeline: a Docker collector on your machine, an AI tria
 - **不是日志存储或搜索系统**：不做索引、不做检索，长期留存请继续用你现有的日志方案。
 - **不是 SIEM / 合规审计产品**：审计库只是为了告警链自身的可追溯，不是合规证据库。
 - **不替代你现有的日志系统**：它只是个"哨兵"，只读你的日志文件，不接管写入。
-- **不是一套固定的部署方案**：它只约定两端之间的契约，不管你把服务放在哪、怎么暴露 —— 躲在已有域名的一个路径后面可以，用公网端口、Nginx 转发、内网直连也都可以。
+- **不是一套固定的部署方案**：它只约定两端之间的契约，不管你把服务放在哪、怎么暴露、用什么容器管理 —— 躲在已有域名的一个路径后面可以，公网端口、Nginx 转发、内网直连也都可以。
 
 ### 由什么组成
 
 ```
-agent/            # Docker 采集栈：读日志、过滤、签名、发送（Portainer Stack）
+agent/            # Docker 采集栈：读日志、过滤、签名、发送（Compose Stack，任何容器管理方式都能部署）
   logtail/        #   基于 vogo/logtail 的目录监听（含 4 个补丁：从尾部开始、带 source 的载荷……）
   alert-gateway/  #   Go 服务：级别判定、去重冷却、项目白名单、HMAC 签名投递、失败重试队列
   projects.json   #   项目 / 程序白名单：true 发送、false 抑制，未列出的一律抑制
@@ -107,7 +109,7 @@ deploy/           # 部署说明
         → HMAC 签名 → HTTPS 投递
 接收端：webhook 入口 → 验签（失败 401 / 按事件 ID 去重 / ±300 秒时效） → pre-LLM 闸门
         → [静默] 只入库 → 每日汇总
-        → AI 中文分诊 → 实时通知
+        → AI 分诊 → 实时通知
 ```
 
 细节分别写在 [`agent/README.md`](agent/README.md)、[`hermes-service/README.md`](hermes-service/README.md)，双端契约见 [`protocol/README.md`](protocol/README.md)。
@@ -121,7 +123,7 @@ cd agent
 cp .env.sample config.env      # 或 config.env.sample，两者内容相同
 ```
 
-填写四个变量，然后在 Docker 主机上构建两个镜像、用 Portainer 部署这个 Stack：
+填写四个变量：
 
 | 变量 | 必填 | 说明 |
 |---|---|---|
@@ -129,6 +131,8 @@ cp .env.sample config.env      # 或 config.env.sample，两者内容相同
 | `HERMES_WEBHOOK_SECRET` | 是 | 双端共享的签名密钥（长随机串，勿复用示例值） |
 | `ALERT_HOST` | 是 | 告警里显示的主机名，例如 `prod-log-server-01` |
 | `LOGS_DIR` | 是 | 宿主日志目录的绝对路径，只读挂载进采集容器 |
+
+然后在 Docker 主机上构建两个镜像，用**你惯用的容器管理方式**部署这个 Stack —— Portainer、Docker Compose 命令行、Swarm、K8s 都可以，没有任何绑定。
 
 再按 [`agent/projects.json`](agent/projects.json) 的白名单决定哪些目录要发：`true` 发送、`false` 抑制，**未列出的目录默认抑制**。改完立即生效，无需重新部署。
 
@@ -148,7 +152,7 @@ cp .env.sample config.env      # 或 config.env.sample，两者内容相同
 
 **3) 验收**
 
-至少确认：健康检查 200、缺失或错误签名 401、一条真实签名的合成事件能收到通知、warning 完全静默、同一个 error 类别的多条日志聚成一类。
+至少确认：健康检查 200、缺失或错误签名 401、一条真实签名的合成事件能收到通知、WARNING 完全静默、同一个 ERROR 类别的多条日志聚成一类。
 
 ### 安全与隐私
 
@@ -183,12 +187,12 @@ It binds you to no particular language, framework, or logging stack — if your 
 
 ### What you get
 
-- **Quiet**: warnings and INFO/DEBUG lines stop waking you up; repeats of one fault are collapsed into one.
-- **Nothing slips through**: a class of failure seen for the first time **always** reaches you, and `critical` is always real time — aggregation compresses repeats, never new problems.
+- **Quiet**: WARNING and INFO/DEBUG lines stop waking you up; repeats of one fault are collapsed into one.
+- **Nothing slips through**: a class of failure seen for the first time **always** reaches you, and CRITICAL is always real time — aggregation compresses repeats, never new problems.
 - **Genuinely intelligent**: severity is decided by a model reading the log, not by keyword matching, and every alert names the project, the program, and the log file instead of "something on some host broke".
 - **Only what you care about**: configuration decides which projects, programs and severities reach you in real time. The rest is not thrown away — it is counted and classified as material for later iterations and troubleshooting.
 - **Fewer tokens**: filtering and clustering happen before the model, so repeated lines are not sent again and again — LLM calls and token spend drop accordingly.
-- **Flexible deployment**: a laptop, a cloud host, or an internal machine; the receiver can hide behind one path on an existing domain, or use a public port, an nginx proxy — whatever fits.
+- **Flexible deployment**: a laptop, a cloud host, or an internal machine; managed by Portainer, Docker Compose, Swarm, or Kubernetes; the receiver can hide behind one path on an existing domain, or use a public port, an nginx proxy — whatever fits.
 
 ### Why it is needed
 
@@ -200,7 +204,7 @@ Wiring your logs into Hermes changes both:
 
 - **Severity stops being a guess.** The log content goes to a model, which reads context instead of checking for keywords — genuinely intelligent logging.
 - **You hear only what you care about.** Configuration decides which projects, which programs and which severities should reach you in real time; everything else stops interrupting you.
-- **The rest is not discarded — it becomes data.** Logs at other severities are counted and classified, giving you material for later iterations and troubleshooting. The INFO and WARN lines nobody watches are exactly where trends and latent faults show up first.
+- **The rest is not discarded — it becomes data.** Logs at other severities are counted and classified, giving you material for later iterations and troubleshooting. The INFO and WARNING lines nobody watches are exactly where trends and latent faults show up first.
 - **Filtering and clustering happen before the model.** Floods of repeated lines are merged first, so the model only ever sees content that carries information — which **substantially reduces LLM calls and token consumption**.
 
 | | Traditional log alerting | Wired into Hermes |
@@ -217,10 +221,10 @@ In one sentence: **from "a regex matched something" to "here is what actually ha
 
 Four gates run before the model ever sees anything:
 
-1. **Severity routing**: warning / info / debug / trace are recorded for the digest only; `error` goes to the real-time path; `critical` is always real time.
-2. **The log line's own level wins**: in both directions. A line the collector mislabelled as `error` while its body says INFO is put back, and a line labelled too low while its body says ERROR is escalated. A line containing a real fault word (`failed`, `exception`, `timeout`, …) is **never** downgraded.
+1. **Severity routing**: WARNING / INFO / DEBUG / TRACE are recorded for the digest only; ERROR goes to the real-time path; CRITICAL is always real time.
+2. **The log line's own level wins**: in both directions. A line the collector mislabelled as ERROR while its body says INFO is put back, and a line labelled too low while its body says ERROR is escalated. A line containing a real fault word (`failed`, `exception`, `timeout`, …) is **never** downgraded.
 3. **Per-class aggregation**: one class of problem — same host, source, level, component, and failure shape — is paged at most once an hour by default (configurable); five in 300 seconds escalate immediately; every suppressed event is still recorded, so nothing disappears.
-4. **Daily digest**: once a day the collected warnings are clustered and summarised into a digest that separates what needs a human, what looks like a bug, and what is noise — with usage and watchdog status attached.
+4. **Daily digest**: once a day the collected WARNING lines are clustered and summarised by a model — what needs a human, what looks like a bug, what is noise — with usage and watchdog status attached. **The output language and wording live in the prompt**, so they can be configured and upgraded at any time.
 
 If the state store cannot be read, the gate **fails silently and leaves a breadcrumb** rather than crashing or waking the model on every line; the next digest reports it in its watchdog block.
 
@@ -229,12 +233,12 @@ If the state store cannot be read, the gate **fails silently and leaves a breadc
 - **Not a log store or search engine**: no indexing, no querying — keep your existing logging for retention.
 - **Not a SIEM or compliance tool**: the audit store exists for the alert chain's own traceability, not as a compliance record.
 - **Not a replacement for your logging**: it is a sentinel that reads your log files; it never takes over writing them.
-- **Not a fixed deployment recipe**: it pins down the contract between the two ends and says nothing about where they live or how they are exposed — behind one path on an existing domain, a public port, an nginx proxy, or a purely internal link all work.
+- **Not a fixed deployment recipe**: it pins down the contract between the two ends and says nothing about where they live, how they are exposed, or which container tooling you use — behind one path on an existing domain, a public port, an nginx proxy, or a purely internal link all work.
 
 ### What it is made of
 
 ```
-agent/            # Docker collector: read, filter, sign, send (Portainer stack)
+agent/            # Docker collector: read, filter, sign, send (Compose stack; any container manager will do)
   logtail/        #   directory watching built on vogo/logtail (4 patches: tail from end, payload with source, …)
   alert-gateway/  #   Go service: severity, dedup cooldowns, project allow-list, signed delivery, retry queue
   projects.json   #   project / program allow-list: true sends, false suppresses, unlisted suppresses
@@ -253,7 +257,7 @@ collector: log files (read-only mount) → keyword routers → project/program a
 receiver:  webhook entry → signature check (401 on failure / dedup by event id / ±300 s)
            → pre-LLM gate
            → [silent] recorded for the digest only
-           → AI triage in the notification language → real-time notification
+           → AI triage → real-time notification
 ```
 
 Details live in [`agent/README.md`](agent/README.md) and [`hermes-service/README.md`](hermes-service/README.md); the contract is [`protocol/README.md`](protocol/README.md).
@@ -267,7 +271,7 @@ cd agent
 cp .env.sample config.env      # or config.env.sample — the same template
 ```
 
-Fill in the four variables, build the two images on the Docker host, and deploy the stack with Portainer:
+Fill in the four variables:
 
 | Variable | Required | Purpose |
 |---|---|---|
@@ -276,7 +280,9 @@ Fill in the four variables, build the two images on the Docker host, and deploy 
 | `ALERT_HOST` | yes | host name shown in alerts, e.g. `prod-log-server-01` |
 | `LOGS_DIR` | yes | absolute host path of the log directory, mounted read-only into the collector |
 
-Then use the allow-list in [`agent/projects.json`](agent/projects.json): `true` sends, `false` suppresses, and **anything unlisted is suppressed**. Changes take effect on the next matching line — no redeploy needed.
+Then build the two images on the Docker host and deploy the stack with **whatever container manager you already use** — Portainer, the Docker Compose CLI, Swarm, or Kubernetes; nothing is tied to one of them.
+
+Use the allow-list in [`agent/projects.json`](agent/projects.json) to decide which directories are sent: `true` sends, `false` suppresses, and **anything unlisted is suppressed**. Changes take effect on the next matching line — no redeploy needed.
 
 **2) Receiver**
 
@@ -295,7 +301,7 @@ Then use the allow-list in [`agent/projects.json`](agent/projects.json): `true` 
 
 **3) Verify**
 
-At minimum: the health endpoint returns 200, a missing or wrong signature returns 401, one properly signed synthetic event produces a notification, a warning is fully silent, and several lines of the same `error` class collapse into one class.
+At minimum: the health endpoint returns 200, a missing or wrong signature returns 401, one properly signed synthetic event produces a notification, a WARNING is fully silent, and several lines of the same ERROR class collapse into one class.
 
 ### Security and privacy
 
