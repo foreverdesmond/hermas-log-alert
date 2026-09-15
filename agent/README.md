@@ -11,13 +11,19 @@ Copy `config.env.sample` to a private, untracked `config.env`, then fill in the
 values. (`.env.sample` contains the same template for Compose users.) When
 deploying through Portainer's Web editor, add every value from that private
 file in the Stack environment-variable section. Portainer does not
-automatically upload it. The two `local/*:0.1.0` images are deliberate placeholders:
-they will be built from pinned arm64 sources in the next step, rather than
-pulling an unverified image.
+automatically upload it. The two `local/*:0.1.0` images are deliberate
+placeholders: build them on the target Docker host, producing an architecture-
+native image (such as Linux `amd64` or `arm64`) rather than pulling an
+unverified image.
 
-Use `method: timer` initially because this is a macOS shared bind mount through
-Docker Desktop. After the shadow test proves file creation and rotation are
-observed reliably, `method: os` can be evaluated for lower wake-up overhead.
+The shipped Logtail configuration uses `method: timer`, which works reliably
+with Linux bind mounts and Docker Desktop shared mounts on macOS or Windows.
+On a Linux host, `method: os` can be evaluated after confirming file creation
+and rotation are observed reliably; it may have lower wake-up overhead.
+
+On Windows, Docker Desktop must be configured for **Linux containers** and the
+directory in `LOGS_DIR` must be shared with Docker. Use forward slashes in the
+environment-variable value, for example `C:/Logs/my-app`.
 
 ## Project filtering
 

@@ -1,6 +1,6 @@
 # Portainer Stack definition for the lightweight log-alert pipeline.
 #
-# Prerequisite: build and tag the two arm64 images locally before deploying
+# Prerequisite: build and tag the two images on the target Docker host before deploying
 # this file from Portainer's Web editor:
 #   local/logtail-hermes:0.1.0
 #   local/log-alert-gateway:0.1.0
@@ -63,7 +63,7 @@ services:
       # safely refuses to start until both values are actually supplied.
       HERMES_WEBHOOK_URL: "${HERMES_WEBHOOK_URL:-}"
       HERMES_WEBHOOK_SECRET: "${HERMES_WEBHOOK_SECRET:-}"
-      ALERT_HOST: "${ALERT_HOST:-mac-mini}"
+      ALERT_HOST: "${ALERT_HOST:-docker-host}"
     read_only: true
     mem_limit: 128m
     cpus: 0.25
