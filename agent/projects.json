@@ -1,0 +1,31 @@
+{
+  "projects": {
+    "Av_Manager": {
+      "programs": {
+        "Av_Manager.Jobs": true
+      }
+    },
+    "KiwiPrice": {
+      "programs": {
+        "KiwiPrice_Scraper": true
+      }
+    },
+    "PolyTrader": {
+      "programs": {
+        "EventSync": true,
+        "MarketSync": true,
+        "CryptoEvent": true,
+        "Crypto1hSync": true,
+        "Crypto4hSync": true,
+        "Crypto5mSync": true,
+        "Crypto15mSync": true
+      }
+    },
+    "Kline": {
+      "programs": {
+        "Kline1mSync": true,
+        "Kline5mSync": true
+      }
+    }
+  }
+}

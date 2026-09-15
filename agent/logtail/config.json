@@ -1,0 +1,77 @@
+{
+  "log_level": "info",
+  "transfers": {
+    "alert-gateway": {
+      "type": "webhook",
+      "url": "http://alert-gateway:9080/v1/events",
+      "rate_limit": 10,
+      "rate_burst": 20,
+      "batch_size": 1
+    }
+  },
+  "routers": {
+    "fatal": {
+      "matchers": [
+        { "contains": ["FATAL"] }
+      ],
+      "transfers": ["alert-gateway"]
+    },
+    "panic": {
+      "matchers": [
+        { "contains": ["PANIC"] }
+      ],
+      "transfers": ["alert-gateway"]
+    },
+    "out-of-memory": {
+      "matchers": [
+        { "contains": ["OutOfMemory"] }
+      ],
+      "transfers": ["alert-gateway"]
+    },
+    "out-of-memory-spaced": {
+      "matchers": [
+        { "contains": ["OUT OF MEMORY"] }
+      ],
+      "transfers": ["alert-gateway"]
+    },
+    "error": {
+      "matchers": [
+        {
+          "contains": ["ERROR"],
+          "not_contains": ["KnownBenignError"]
+        }
+      ],
+      "transfers": ["alert-gateway"]
+    },
+    "exception": {
+      "matchers": [
+        {
+          "contains": ["EXCEPTION"],
+          "not_contains": ["KnownBenignError"]
+        }
+      ],
+      "transfers": ["alert-gateway"]
+    },
+    "warning": {
+      "matchers": [
+        {
+          "contains": ["WARN"],
+          "not_contains": ["KnownBenignWarning"]
+        }
+      ],
+      "transfers": ["alert-gateway"]
+    }
+  },
+  "servers": {
+    "host-logs": {
+      "routers": ["fatal", "panic", "out-of-memory", "out-of-memory-spaced", "error", "exception", "warning"],
+      "file": {
+        "path": "/logs",
+        "recursive": true,
+        "suffix": ".log",
+        "method": "timer",
+        "dir_file_count_limit": 256
+      }
+    }
+  }
+}

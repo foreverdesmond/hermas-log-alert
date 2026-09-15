@@ -1,0 +1,48 @@
+diff --git a/internal/trans/transfer_webhook.go b/internal/trans/transfer_webhook.go
+index 32a9e99..f0fabb1 100644
+--- a/internal/trans/transfer_webhook.go
++++ b/internal/trans/transfer_webhook.go
+@@ -17,6 +17,8 @@
+ package trans
+ 
+ import (
++	"bytes"
++	"encoding/json"
+ 	"errors"
+ 	"net/http"
+ )
+@@ -41,6 +43,21 @@ func (d *WebhookTransfer) Name() string {
+ }
+ 
+ func (d *WebhookTransfer) Trans(source string, data ...[]byte) error {
++	// The upstream webhook transfer drops the source path and forwards raw text.
++	// Keep this compact envelope so the gateway can group incidents by service.
++	if d.batcher == nil {
++		payload, err := json.Marshal(struct {
++			Source  string `json:"source"`
++			Message string `json:"message"`
++		}{
++			Source:  source,
++			Message: string(bytes.Join(data, []byte("\n"))),
++		})
++		if err != nil {
++			return err
++		}
++		return httpTransWithClient(d.client, d.url, payload)
++	}
+ 	if d.batcher != nil {
+ 		for _, b := range data {
+ 			d.batcher.Add(source, b)
+diff --git a/internal/util/util.go b/internal/util/util.go
+index 97ab641..f2e614c 100644
+--- a/internal/util/util.go
++++ b/internal/util/util.go
+@@ -50,6 +50,7 @@ func IgnoreLineEnd(bytes []byte, length, index int) int {
+ }
+ 
+ // FollowRetryTailCommand flag `-F` is same as `--follow=name --retry`.
+ func FollowRetryTailCommand(f string) string {
+-	return fmt.Sprintf("tail -F %s", f)
++	// Begin at EOF: a newly discovered daily log must not replay its last 10 lines.
++	return fmt.Sprintf("tail -n 0 -F -- %q", f)
+ }

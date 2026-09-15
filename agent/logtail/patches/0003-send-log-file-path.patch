@@ -1,0 +1,15 @@
+diff --git a/internal/serve/worker_dir.go b/internal/serve/worker_dir.go
+--- a/internal/serve/worker_dir.go
++++ b/internal/serve/worker_dir.go
+@@ -94,7 +94,10 @@ func (s *Server) startDirWatchWorkers(path string, watcher *fwatch.FileWatcher)
+ 				if w, ok := fileWorkerMap[watchEvent.Name]; ok {
+ 					vlog.Infof("worker [%s] is already tailing file: %s", w.ID, watchEvent.Name)
+ 				} else {
+ 					// non-dynamic worker will retry self
+-					w = s.AddWorker(util.FollowRetryTailCommand(watchEvent.Name), false)
++					w = s.buildWorker(util.FollowRetryTailCommand(watchEvent.Name), false)
++					w.Source = watchEvent.Name
++					go w.StartLoop()
++					s.Workers[w.ID] = w
+ 					fileWorkerMap[watchEvent.Name] = w
+ 				}

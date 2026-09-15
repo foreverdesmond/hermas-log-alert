@@ -1,0 +1,20 @@
+# macOS metadata
+.DS_Store
+
+# Local environment files can contain the Hermes endpoint and signing secret.
+.env
+.env.*
+!.env.sample
+config.env
+config.env.*
+!config.env.sample
+
+# Gateway state and any locally copied log material.
+*.db
+*.db-*
+*.sqlite
+*.sqlite-*
+*.log
+logs/
+data/
+alert_gateway_data/

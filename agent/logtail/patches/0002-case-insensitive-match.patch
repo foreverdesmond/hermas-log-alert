@@ -1,0 +1,35 @@
+diff --git a/internal/match/matcher_contains.go b/internal/match/matcher_contains.go
+--- a/internal/match/matcher_contains.go
++++ b/internal/match/matcher_contains.go
+@@ -17,5 +17,7 @@
+ package match
+ 
++import "strings"
++
+ type ContainsMatcher struct {
+ 	contains bool
+ 	pattern  string
+@@ -32,6 +34,6 @@
+ 	containsMatcher := &ContainsMatcher{
+ 		contains: contains,
+-		pattern:  pattern,
++		pattern:  strings.ToLower(pattern),
+ 		plen:     len(pattern),
+ 		kmp:      make([]int, len(pattern)+1),
+ 	}
+@@ -68,8 +70,13 @@
+ 	for i := range length {
+-		for j > -1 && cm.pattern[j+1] != bytes[i] {
++		b := bytes[i]
++		if b >= 'A' && b <= 'Z' {
++			b += 'a' - 'A'
++		}
++
++		for j > -1 && cm.pattern[j+1] != b {
+ 			j = cm.kmp[j]
+ 		}
+ 
+-		if cm.pattern[j+1] == bytes[i] {
++		if cm.pattern[j+1] == b {
+ 			j++
+ 		}

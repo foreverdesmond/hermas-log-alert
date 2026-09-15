@@ -1,0 +1,32 @@
+diff --git a/watcher.go b/watcher.go
+--- a/watcher.go
++++ b/watcher.go
+@@ -21,6 +21,6 @@
+ 
+ const (
+ 	watchTimeFactor           = 3
+-	maxFsWatcherTimerInterval = time.Minute
++	maxFsWatcherTimerInterval = 10 * time.Second
+ 	minFsWatcherTimerInterval = time.Second
+ )
+diff --git a/watcher_dir_timer.go b/watcher_dir_timer.go
+--- a/watcher_dir_timer.go
++++ b/watcher_dir_timer.go
+@@ -49,12 +49,9 @@
+ func (fw *FileWatcher) checkDirInfo(dir string, dirInfo os.FileInfo, dirStat *DirStat, silenceDeadline time.Time) {
+-	// dir mod time is updated only when creating or removing sub files.
+-	// not need to check files in directory if dir mod time not updated.
+-	if !dirInfo.ModTime().After(dirStat.modTime) {
+-		vlog.Tracef("ignore not updated dir: %s", dirInfo.Name())
+-
+-		return
++	// Docker Desktop bind mounts do not reliably propagate directory mtime.
++	// Always scan: the short timer interval keeps new files and subdirectories
++	// discoverable even when the parent mtime appears unchanged.
++	if dirInfo.ModTime().After(dirStat.modTime) {
++		dirStat.modTime = dirInfo.ModTime()
+ 	}
+-
+-	dirStat.modTime = dirInfo.ModTime()
+ 
+ 	vlog.Debugf("start check dir: %s", dir)

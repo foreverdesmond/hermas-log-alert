@@ -1,0 +1,10 @@
+{
+  "projects": {
+    "ExampleProject": {
+      "programs": {
+        "ExampleWorker": true,
+        "OptionalWorker": false
+      }
+    }
+  }
+}

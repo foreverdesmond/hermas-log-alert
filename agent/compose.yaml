@@ -1,0 +1,101 @@
+# Portainer Stack definition for the lightweight log-alert pipeline.
+#
+# Prerequisite: build and tag the two arm64 images locally before deploying
+# this file from Portainer's Web editor:
+#   local/logtail-hermes:0.1.0
+#   local/log-alert-gateway:0.1.0
+#
+# Logtail only reaches the gateway on the isolated ingest network. The gateway
+# is the sole service with outbound access to Hermes.
+
+services:
+  logtail:
+    image: local/logtail-hermes:0.1.0
+    pull_policy: never
+    command: ["-file", "/etc/logtail/config.json"]
+    restart: unless-stopped
+    init: true
+    user: "65532:65532"
+    environment:
+      # Logtail resolves the current user's profile during startup.  The
+      # scratch-based image has no passwd entry, so provide the identity
+      # explicitly while retaining the unprivileged numeric user.
+      USER: logtail
+      HOME: /tmp
+    read_only: true
+    mem_limit: 64m
+    cpus: 0.25
+    # One tail subprocess is used per active log file. Keep room for normal
+    # log rotation and new applications without raising memory limits.
+    pids_limit: 256
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=16m
+    volumes:
+      - ${LOGS_DIR:?Set LOGS_DIR to the host directory containing application logs}:/logs:ro
+      - ./logtail/config.json:/etc/logtail/config.json:ro
+    networks:
+      - log_alert_ingest
+    depends_on:
+      alert-gateway:
+        condition: service_healthy
+
+  alert-gateway:
+    image: local/log-alert-gateway:0.1.0
+    pull_policy: never
+    restart: unless-stopped
+    init: true
+    # A fresh Docker named volume is root-owned. This service needs to create
+    # its SQLite database there; it has no host bind mounts or Linux caps.
+    user: "0:0"
+    environment:
+      LISTEN_ADDR: "0.0.0.0:9080"
+      DATA_DIR: "/var/lib/alert-gateway"
+      RETENTION_DAYS: "7"
+      ALERT_COOLDOWN_SECONDS: "900"
+      WARNING_COOLDOWN_SECONDS: "1800"
+      MAX_CONTEXT_BYTES: "4096"
+      # Populate these in Portainer's Stack environment-variable section.
+      # Defaulting to empty lets Portainer create the project; the gateway then
+      # safely refuses to start until both values are actually supplied.
+      HERMES_WEBHOOK_URL: "${HERMES_WEBHOOK_URL:-}"
+      HERMES_WEBHOOK_SECRET: "${HERMES_WEBHOOK_SECRET:-}"
+      ALERT_HOST: "${ALERT_HOST:-mac-mini}"
+    read_only: true
+    mem_limit: 128m
+    cpus: 0.25
+    pids_limit: 128
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=32m
+    volumes:
+      - alert_gateway_data:/var/lib/alert-gateway
+      - ./projects.json:/etc/alert-gateway/projects.json:ro
+    networks:
+      - log_alert_ingest
+      - log_alert_egress
+    healthcheck:
+      test: ["CMD", "/app/alert-gateway", "healthcheck"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+networks:
+  log_alert_ingest:
+    name: log_alert_ingest
+    driver: bridge
+    internal: true
+  log_alert_egress:
+    name: log_alert_egress
+    driver: bridge
+
+volumes:
+  alert_gateway_data:
+    name: log_alert_gateway_data
