@@ -8,5 +8,6 @@ RUN go mod tidy \
 FROM alpine:3.22
 RUN apk add --no-cache ca-certificates
 COPY --from=build /out/alert-gateway /app/alert-gateway
+COPY LICENSES/Apache-2.0.txt /usr/share/licenses/hermas-log-alert/Apache-2.0.txt
 USER 65532:65532
 ENTRYPOINT ["/app/alert-gateway"]

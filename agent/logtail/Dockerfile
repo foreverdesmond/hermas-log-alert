@@ -19,5 +19,6 @@ RUN patch -p1 < /patches/0001-tail-from-end-and-gateway-payload.patch \
 FROM alpine:3.22
 RUN apk add --no-cache ca-certificates
 COPY --from=build /out/logtail /usr/local/bin/logtail
+COPY LICENSES/Apache-2.0.txt /usr/share/licenses/hermas-log-alert/Apache-2.0.txt
 USER 65532:65532
 ENTRYPOINT ["/usr/local/bin/logtail"]

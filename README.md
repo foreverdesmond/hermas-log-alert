@@ -21,3 +21,9 @@ commit that file. The `.gitignore` also excludes database files and log files.
 
 `agent/projects.json` is safe to commit when it contains only project and
 program names. Use `agent/projects.sample.json` as the generic starting point.
+
+## Third-party software
+
+The collector builds on Logtail and Fwatch under Apache-2.0. Their attribution,
+fixed source revisions, licenses, and our modification notices are recorded in
+[`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).
