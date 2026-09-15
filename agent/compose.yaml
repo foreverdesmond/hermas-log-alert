@@ -1,7 +1,8 @@
-# Portainer Stack definition for the lightweight log-alert pipeline.
+# Compose stack definition for the lightweight log-alert pipeline. Deploy it with
+# any container manager you like: Portainer, the Docker Compose CLI, Swarm, Kubernetes, ...
 #
 # Prerequisite: build and tag the two images on the target Docker host before deploying
-# this file from Portainer's Web editor:
+# this file from your container manager (web editor or CLI):
 #   local/logtail-hermes:0.1.0
 #   local/log-alert-gateway:0.1.0
 #
@@ -58,8 +59,8 @@ services:
       ALERT_COOLDOWN_SECONDS: "900"
       WARNING_COOLDOWN_SECONDS: "1800"
       MAX_CONTEXT_BYTES: "4096"
-      # Populate these in Portainer's Stack environment-variable section.
-      # Defaulting to empty lets Portainer create the project; the gateway then
+      # Populate these through your deployment tool's environment-variable section.
+      # Defaulting to empty lets the stack be created first; the gateway then
       # safely refuses to start until both values are actually supplied.
       HERMES_WEBHOOK_URL: "${HERMES_WEBHOOK_URL:-}"
       HERMES_WEBHOOK_SECRET: "${HERMES_WEBHOOK_SECRET:-}"
