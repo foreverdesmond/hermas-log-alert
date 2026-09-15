@@ -9,8 +9,10 @@ natively for the architecture of the build host.
 ## Layout
 
 - `agent/` — Docker log collector, local filtering, deduplication, and Hermes forwarding.
-- `hermes-service/` — Hermes-side webhook receiver, AI triage, notification, and reporting (to be added).
-- `protocol/` — shared signed-event contract (to be added).
+- `hermes-service/` — server side: pre-LLM gate, AI triage, notification, daily digest
+  (see [`hermes-service/README.md`](hermes-service/README.md)).
+- `protocol/` — the shared signed-event contract both ends implement
+  (see [`protocol/README.md`](protocol/README.md)).
 - `deploy/` — deployment notes and environment-specific assets.
 
 ## Secrets and runtime data
@@ -18,6 +20,11 @@ natively for the architecture of the build host.
 Copy `agent/.env.sample` to the untracked visible file `agent/config.env`, fill
 in the values, and enter those variables in Portainer when deploying. Do not
 commit that file. The `.gitignore` also excludes database files and log files.
+
+On the receiver side, create the route subscription from
+`hermes-service/config/webhook-subscription.sample.json`, and paste the prompt from
+`hermes-service/config/prompts/alert-triage.md` into it verbatim. The signing secret and
+the notification chat id stay in local secrets and are never committed.
 
 `agent/projects.json` is safe to commit when it contains only project and
 program names. Use `agent/projects.sample.json` as the generic starting point.

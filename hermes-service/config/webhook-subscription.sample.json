@@ -1,0 +1,15 @@
+{
+ "log-alert": {
+  "description": "AI triage for signed Mac mini log alerts with pre-LLM storm aggregation",
+  "events": [],
+  "secret": "<WEBHOOK_SIGNING_SECRET>",
+  "prompt": "<paste config/prompts/alert-triage.md verbatim>",
+  "skills": [],
+  "deliver": "telegram",
+  "created_at": "2026-09-14T06:38:17Z",
+  "script": "log_storm_guard.py",
+  "deliver_extra": {
+   "chat_id": "<TARGET_CHAT_ID>"
+  }
+ }
+}
