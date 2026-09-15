@@ -1,12 +1,15 @@
 Hermas Log Alert
-Copyright 2024-2025 Richmond522 (Richy)
+Copyright 2026 Richmond522
 
 本仓库以 Apache License 2.0 授权。
-本文件第 1 部分为许可证英文原文（唯一有效版本，未经任何修改）；第 2 部分为便于理解而附的中文
-参考译文，非官方译本、不具法律效力，如有歧义以英文原文为准。
+第 1 部分为许可证英文正文，是唯一有效版本：第 1–9 节条款未作任何改动，文末附录中的占位字段已按
+该附录自身的说明填入本项目的版权信息。第 2 部分为便于理解而附的中文参考译文，非官方译本、
+不具法律效力，如有歧义以英文原文为准。
 
 This repository is licensed under the Apache License, Version 2.0.
-Part 1 below is the license text in English — unmodified and authoritative.
+Part 1 is the license text in English and is authoritative: sections 1-9 are
+unmodified, and the placeholder fields in its appendix have been filled in with
+this project's copyright notice, exactly as that appendix instructs.
 Part 2 is an unofficial Chinese reference translation provided for convenience;
 it has no legal effect, and the English text governs.
 
@@ -201,7 +204,7 @@ it has no legal effect, and the English text governs.
       same "printed page" as the copyright notice for easier
       identification within third-party archives.
 
-   Copyright [yyyy] [name of copyright owner]
+   Copyright 2026 Richmond522
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -308,7 +311,7 @@ http://www.apache.org/licenses/
 要将 Apache 许可证应用于您的作品，请附上以下样板声明，并将方括号"[]"中的字段替换为您自己的识别信息（不要包含方括号！）该文本应使用适合相应文件格式的注释语法括起来。我们还建议将文件名或类名以及用途说明放在与版权声明相同的"打印页"上，以便在第三方存档中更容易识别。
 
 ```
-Copyright [yyyy] [版权所有人姓名]
+Copyright 2026 Richmond522
 
 以 Apache 许可证 2.0 版（"许可证"）授权；
 除遵守本许可证外，您不得使用本文件。

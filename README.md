@@ -163,7 +163,7 @@ cp .env.sample config.env      # 或 config.env.sample，两者内容相同
 
 ### 许可证
 
-本仓库以 **Apache License 2.0** 授权，见 [`LICENSE`](LICENSE)（英文原文为唯一有效版本，其后附非官方中文参考译文）。
+本仓库以 **Apache License 2.0** 授权，见 [`LICENSE`](LICENSE)（英文原文为唯一有效版本，其后附非官方中文参考译文）；版权归属见 [`NOTICE`](NOTICE)。
 采集端构建会获取并修改第三方组件（Logtail、Fwatch，均为 Apache-2.0），其归属与固定版本记录在 [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md)。
 
 ### 版本
@@ -312,7 +312,7 @@ At minimum: the health endpoint returns 200, a missing or wrong signature return
 
 ### License
 
-This repository is licensed under the **Apache License 2.0** — see [`LICENSE`](LICENSE) (the English text is authoritative; an unofficial Chinese reference translation follows it).
+This repository is licensed under the **Apache License 2.0** — see [`LICENSE`](LICENSE) (the English text is authoritative; an unofficial Chinese reference translation follows it); copyright ownership is recorded in [`NOTICE`](NOTICE).
 The collector build obtains and modifies third-party components (Logtail, Fwatch, both Apache-2.0); their attribution and pinned revisions are recorded in [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).
 
 ### Versions
