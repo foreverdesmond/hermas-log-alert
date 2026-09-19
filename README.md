@@ -1,4 +1,4 @@
-# Hermas Log Alert
+# Hermes Log Alert
 
 <div align="center">
 

@@ -39,6 +39,6 @@ upstream modification is auditable.
 ## Distribution of images
 
 The Logtail and alert-gateway runtime images include a readable copy of the
-Apache-2.0 license at `/usr/share/licenses/hermas-log-alert/Apache-2.0.txt`.
+Apache-2.0 license at `/usr/share/licenses/hermes-log-alert/Apache-2.0.txt`.
 When publishing a derivative image or source archive, retain this notice, the
 Apache-2.0 text, and the patch files above.
